@@ -1,17 +1,13 @@
 import React from "react";
 
-const Home = () => {
+const NotFound = () => {
   return (
     <>
-      <img
-        className="spongebob-404"
-        src="/spongebob-404.webp"
-        alt="Spongebob 404"
-      />
+      <img className="coyote-404" src="/coyote-404.png" alt="Coyote 404" />
       <br />
       <h1>404 - Page Not Found</h1>
     </>
   );
 };
 
-export default Home;
+export default NotFound;
