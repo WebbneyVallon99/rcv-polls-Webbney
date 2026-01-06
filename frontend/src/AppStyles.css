@@ -2,9 +2,32 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Raleway", sans-serif;
+}
+
+:root {
+  --xilonen-gold: #d4af37;
+  --xilonen-gold-light: #f4e4bc;
+  --xilonen-gold-dark: #b8941f;
+  --xilonen-teal: #40e0d0;
+  --xilonen-teal-dark: #2db8a8;
+  --xilonen-cream: #fff8e7;
+  --xilonen-warm: #f5e6d3;
+  --xilonen-accent: #c2185b;
+  --xilonen-text: #3d2f1f;
+  --xilonen-text-light: #6b5d4f;
+  --xilonen-shadow: rgba(212, 175, 55, 0.3);
 }
 
 body {
-  background-color: #fff;
+  font-family: "Raleway", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #fff8e7 0%, #f5e6d3 50%, #ffe9c4 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  color: var(--xilonen-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app {
+  min-height: calc(100vh - 70px);
 }

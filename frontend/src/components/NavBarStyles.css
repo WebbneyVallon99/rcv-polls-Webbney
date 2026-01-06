@@ -4,21 +4,28 @@
   align-items: center;
   position: sticky;
   top: 0;
-  z-index: 2;
-  background-color: #bcd4de;
+  z-index: 100;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.95), rgba(244, 228, 188, 0.95));
+  backdrop-filter: blur(10px);
   padding: 1rem 2rem;
-  border-bottom: 1px solid #000;
+  border-bottom: 2px solid var(--xilonen-gold-dark);
+  box-shadow: 0 4px 15px var(--xilonen-shadow);
 }
 
 .nav-brand a {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #333;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--xilonen-text);
   text-decoration: none;
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
 }
 
 .nav-brand a:hover {
-  color: #007bff;
+  color: var(--xilonen-gold-dark);
+  text-shadow: 2px 2px 8px rgba(212, 175, 55, 0.8);
+  transform: scale(1.05);
 }
 
 .nav-links {
@@ -33,16 +40,21 @@
 }
 
 .nav-link {
-  color: #666;
+  color: var(--xilonen-text);
   text-decoration: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  transition: all 0.2s;
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
 }
 
 .nav-link:hover {
-  color: #007bff;
-  background-color: #e9ecef;
+  color: var(--xilonen-gold-dark);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(244, 228, 188, 0.6));
+  border-color: var(--xilonen-teal-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px var(--xilonen-shadow);
 }
 
 .user-section {
@@ -52,21 +64,26 @@
 }
 
 .username {
-  color: #666;
-  font-weight: 500;
+  color: var(--xilonen-text);
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 .logout-btn {
-  background-color: #dc3545;
+  background: linear-gradient(135deg, var(--xilonen-accent), #a01447);
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.875rem;
-  transition: background-color 0.2s;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(194, 24, 91, 0.3);
 }
 
 .logout-btn:hover {
-  background-color: #c82333;
+  background: linear-gradient(135deg, #a01447, var(--xilonen-accent));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(194, 24, 91, 0.5);
 }
