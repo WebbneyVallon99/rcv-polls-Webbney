@@ -28,6 +28,7 @@ app.use(cookieParser());
 
 app.use(morgan("dev")); // logging middleware
 app.use(express.static(path.join(__dirname, "public"))); // serve static files from public folder
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads"))); // serve uploaded images
 app.use("/api", apiRouter); // mount api router
 app.use("/auth", authRouter); // mount auth router
 

@@ -1,3 +1,57 @@
-node_modules
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Environment variables (IMPORTANT: Contains database credentials!)
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# User uploaded files
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Build / Deploy
 .vercel
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# OS Files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE / Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Testing
+coverage/
+.nyc_output/
+*.test.js.snap
+
+# Temporary files
+tmp/
+temp/
+*.tmp
