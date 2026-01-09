@@ -6,7 +6,7 @@ const Poll = db.define("poll", {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      len: [1, 200],
+      len: [3, 255],
     },
   },
   description: {

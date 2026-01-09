@@ -6,6 +6,13 @@ const { authenticateJWT } = require("../auth/index");
 const path = require("path");
 const fs = require("fs");
 
+// Helper to delete old image if a new one is uploaded
+const deleteOldImage = (imagePath) => {
+  if (imagePath && fs.existsSync(path.join(__dirname, "../public", imagePath))) {
+    fs.unlinkSync(path.join(__dirname, "../public", imagePath));
+  }
+};
+
 // Get all polls
 router.get("/", async (req, res) => {
   try {
@@ -78,7 +85,7 @@ router.post("/", authenticateJWT, upload.single("image"), async (req, res) => {
         optionsArray = typeof options === "string" ? JSON.parse(options) : options;
       } catch (e) {
         // If not JSON, assume it's a comma-separated string
-        optionsArray = options.split(",").map((opt) => opt.trim()).filter(Boolean);
+        optionsArray = options.split(",").map((opt) => opt.trim());
       }
     }
 
@@ -86,101 +93,95 @@ router.post("/", authenticateJWT, upload.single("image"), async (req, res) => {
       return res.status(400).json({ error: "At least 2 options are required" });
     }
 
-    // Handle image upload
-    let imageUrl = null;
-    if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
-    }
-
-    // Parse closeDate if provided
-    let parsedCloseDate = null;
-    if (closeDate) {
-      parsedCloseDate = new Date(closeDate);
-      if (isNaN(parsedCloseDate.getTime())) {
-        return res.status(400).json({ error: "Invalid close date format" });
-      }
-    }
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
     // Create poll
-    const poll = await Poll.create({
+    const newPoll = await Poll.create({
       title,
       description: description || null,
-      status: "open",
-      closeDate: parsedCloseDate,
+      closeDate: closeDate || null,
       imageUrl,
       userId,
     });
 
     // Create options
-    const createdOptions = await Promise.all(
-      optionsArray.map((optionText, index) =>
-        Option.create({
-          text: optionText,
-          order: index,
-          pollId: poll.id,
-        })
-      )
-    );
+    const optionPromises = optionsArray.map((optionText, index) => {
+      const text = typeof optionText === "string" ? optionText : optionText.text || optionText;
+      return Option.create({
+        text,
+        pollId: newPoll.id,
+        order: index,
+      });
+    });
 
-    // Fetch poll with relationships
-    const pollWithDetails = await Poll.findByPk(poll.id, {
+    await Promise.all(optionPromises);
+
+    // Fetch the complete poll with options
+    const completePoll = await Poll.findByPk(newPoll.id, {
       include: [
-        { model: User, as: "creator", attributes: ["id", "username"] },
-        { model: Option, as: "options", order: [["order", "ASC"]] },
+        {
+          model: User,
+          as: "creator",
+          attributes: ["id", "username"],
+        },
+        {
+          model: Option,
+          as: "options",
+          order: [["order", "ASC"]],
+        },
       ],
     });
 
-    res.status(201).json({ poll: pollWithDetails });
+    res.status(201).json({ poll: completePoll });
   } catch (error) {
     console.error("Error creating poll:", error);
-    res.status(500).json({ error: "Failed to create poll" });
+    if (req.file) {
+      deleteOldImage(`/uploads/${req.file.filename}`);
+    }
+    res.status(500).json({ error: error.message || "Failed to create poll" });
   }
 });
 
-// Update poll (authenticated, creator only)
+// Update poll (authenticated, owner only)
 router.put("/:id", authenticateJWT, upload.single("image"), async (req, res) => {
   try {
     const poll = await Poll.findByPk(req.params.id);
+
     if (!poll) {
       return res.status(404).json({ error: "Poll not found" });
     }
 
-    // Check if user is the creator
     if (poll.userId !== req.user.id) {
-      return res.status(403).json({ error: "Only the poll creator can edit this poll" });
+      return res.status(403).json({ error: "You can only update your own polls" });
     }
 
     const { title, description, status, closeDate } = req.body;
+    const updateData = {};
 
-    // Handle image upload - delete old image if new one is uploaded
+    if (title) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (status) updateData.status = status;
+    if (closeDate !== undefined) updateData.closeDate = closeDate;
+
     if (req.file) {
-      if (poll.imageUrl) {
-        const oldImagePath = path.join(__dirname, "..", "public", poll.imageUrl);
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-        }
-      }
-      poll.imageUrl = `/uploads/${req.file.filename}`;
+      deleteOldImage(poll.imageUrl);
+      updateData.imageUrl = `/uploads/${req.file.filename}`;
     }
 
-    // Update fields
-    if (title) poll.title = title;
-    if (description !== undefined) poll.description = description;
-    if (status && ["open", "closed"].includes(status)) poll.status = status;
-    if (closeDate) {
-      const parsedDate = new Date(closeDate);
-      if (!isNaN(parsedDate.getTime())) {
-        poll.closeDate = parsedDate;
-      }
-    }
+    await poll.update(updateData);
 
-    await poll.save();
-
-    // Fetch updated poll with relationships
     const updatedPoll = await Poll.findByPk(poll.id, {
       include: [
-        { model: User, as: "creator", attributes: ["id", "username"] },
-        { model: Option, as: "options", order: [["order", "ASC"]] },
+        {
+          model: User,
+          as: "creator",
+          attributes: ["id", "username"],
+        },
+        {
+          model: Option,
+          as: "options",
+          order: [["order", "ASC"]],
+        },
       ],
     });
 
@@ -191,25 +192,60 @@ router.put("/:id", authenticateJWT, upload.single("image"), async (req, res) => 
   }
 });
 
-// Close poll manually (authenticated, creator only)
-router.post("/:id/close", authenticateJWT, async (req, res) => {
+// Delete poll (authenticated, owner only)
+router.delete("/:id", authenticateJWT, async (req, res) => {
   try {
     const poll = await Poll.findByPk(req.params.id);
+
     if (!poll) {
       return res.status(404).json({ error: "Poll not found" });
     }
 
     if (poll.userId !== req.user.id) {
-      return res.status(403).json({ error: "Only the poll creator can close this poll" });
+      return res.status(403).json({ error: "You can only delete your own polls" });
     }
 
-    poll.status = "closed";
-    await poll.save();
+    deleteOldImage(poll.imageUrl);
+    await poll.destroy();
+
+    res.json({ message: "Poll deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting poll:", error);
+    res.status(500).json({ error: "Failed to delete poll" });
+  }
+});
+
+// Close poll manually (authenticated, owner only)
+router.post("/:id/close", authenticateJWT, async (req, res) => {
+  try {
+    const poll = await Poll.findByPk(req.params.id);
+
+    if (!poll) {
+      return res.status(404).json({ error: "Poll not found" });
+    }
+
+    if (poll.userId !== req.user.id) {
+      return res.status(403).json({ error: "You can only close your own polls" });
+    }
+
+    if (poll.status === "closed") {
+      return res.status(400).json({ error: "Poll is already closed" });
+    }
+
+    await poll.update({ status: "closed" });
 
     const updatedPoll = await Poll.findByPk(poll.id, {
       include: [
-        { model: User, as: "creator", attributes: ["id", "username"] },
-        { model: Option, as: "options", order: [["order", "ASC"]] },
+        {
+          model: User,
+          as: "creator",
+          attributes: ["id", "username"],
+        },
+        {
+          model: Option,
+          as: "options",
+          order: [["order", "ASC"]],
+        },
       ],
     });
 
@@ -220,172 +256,41 @@ router.post("/:id/close", authenticateJWT, async (req, res) => {
   }
 });
 
-// Add option to poll (authenticated, creator only)
-router.post("/:id/options", authenticateJWT, upload.single("image"), async (req, res) => {
+// Update option (authenticated, poll owner only)
+router.put("/:pollId/options/:optionId", authenticateJWT, upload.single("image"), async (req, res) => {
   try {
-    const poll = await Poll.findByPk(req.params.id);
+    const poll = await Poll.findByPk(req.params.pollId);
+
     if (!poll) {
       return res.status(404).json({ error: "Poll not found" });
     }
 
     if (poll.userId !== req.user.id) {
-      return res.status(403).json({ error: "Only the poll creator can add options" });
+      return res.status(403).json({ error: "You can only update options for your own polls" });
     }
 
-    const { text } = req.body;
-    if (!text) {
-      return res.status(400).json({ error: "Option text is required" });
-    }
+    const option = await Option.findByPk(req.params.optionId);
 
-    // Get current max order
-    const maxOrderOption = await Option.findOne({
-      where: { pollId: poll.id },
-      order: [["order", "DESC"]],
-    });
-
-    const newOrder = maxOrderOption ? maxOrderOption.order + 1 : 0;
-
-    // Handle image upload
-    let imageUrl = null;
-    if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
-    }
-
-    const option = await Option.create({
-      text,
-      imageUrl,
-      order: newOrder,
-      pollId: poll.id,
-    });
-
-    res.status(201).json({ option });
-  } catch (error) {
-    console.error("Error adding option:", error);
-    res.status(500).json({ error: "Failed to add option" });
-  }
-});
-
-// Update option (authenticated, creator only)
-router.put("/:id/options/:optionId", authenticateJWT, upload.single("image"), async (req, res) => {
-  try {
-    const poll = await Poll.findByPk(req.params.id);
-    if (!poll) {
-      return res.status(404).json({ error: "Poll not found" });
-    }
-
-    if (poll.userId !== req.user.id) {
-      return res.status(403).json({ error: "Only the poll creator can edit options" });
-    }
-
-    const option = await Option.findOne({
-      where: { id: req.params.optionId, pollId: poll.id },
-    });
-
-    if (!option) {
+    if (!option || option.pollId !== poll.id) {
       return res.status(404).json({ error: "Option not found" });
     }
 
-    const { text, order } = req.body;
+    const { text } = req.body;
+    const updateData = {};
 
-    // Handle image upload - delete old image if new one is uploaded
+    if (text) updateData.text = text;
+
     if (req.file) {
-      if (option.imageUrl) {
-        const oldImagePath = path.join(__dirname, "..", "public", option.imageUrl);
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-        }
-      }
-      option.imageUrl = `/uploads/${req.file.filename}`;
+      deleteOldImage(option.imageUrl);
+      updateData.imageUrl = `/uploads/${req.file.filename}`;
     }
 
-    if (text) option.text = text;
-    if (order !== undefined) option.order = parseInt(order);
-
-    await option.save();
+    await option.update(updateData);
 
     res.json({ option });
   } catch (error) {
     console.error("Error updating option:", error);
     res.status(500).json({ error: "Failed to update option" });
-  }
-});
-
-// Delete option (authenticated, creator only)
-router.delete("/:id/options/:optionId", authenticateJWT, async (req, res) => {
-  try {
-    const poll = await Poll.findByPk(req.params.id);
-    if (!poll) {
-      return res.status(404).json({ error: "Poll not found" });
-    }
-
-    if (poll.userId !== req.user.id) {
-      return res.status(403).json({ error: "Only the poll creator can delete options" });
-    }
-
-    const option = await Option.findOne({
-      where: { id: req.params.optionId, pollId: poll.id },
-    });
-
-    if (!option) {
-      return res.status(404).json({ error: "Option not found" });
-    }
-
-    // Delete option image if it exists
-    if (option.imageUrl) {
-      const imagePath = path.join(__dirname, "..", "public", option.imageUrl);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-    }
-
-    await option.destroy();
-
-    res.json({ message: "Option deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting option:", error);
-    res.status(500).json({ error: "Failed to delete option" });
-  }
-});
-
-// Delete poll (authenticated, creator only)
-router.delete("/:id", authenticateJWT, async (req, res) => {
-  try {
-    const poll = await Poll.findByPk(req.params.id, {
-      include: [{ model: Option, as: "options" }],
-    });
-
-    if (!poll) {
-      return res.status(404).json({ error: "Poll not found" });
-    }
-
-    if (poll.userId !== req.user.id) {
-      return res.status(403).json({ error: "Only the poll creator can delete this poll" });
-    }
-
-    // Delete poll image if it exists
-    if (poll.imageUrl) {
-      const imagePath = path.join(__dirname, "..", "public", poll.imageUrl);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-    }
-
-    // Delete all option images
-    for (const option of poll.options) {
-      if (option.imageUrl) {
-        const imagePath = path.join(__dirname, "..", "public", option.imageUrl);
-        if (fs.existsSync(imagePath)) {
-          fs.unlinkSync(imagePath);
-        }
-      }
-    }
-
-    await poll.destroy();
-
-    res.json({ message: "Poll deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting poll:", error);
-    res.status(500).json({ error: "Failed to delete poll" });
   }
 });
 

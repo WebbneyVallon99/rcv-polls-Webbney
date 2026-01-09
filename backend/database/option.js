@@ -6,7 +6,7 @@ const Option = db.define("option", {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      len: [1, 200],
+      len: [1, 255],
     },
   },
   imageUrl: {
@@ -15,8 +15,8 @@ const Option = db.define("option", {
   },
   order: {
     type: DataTypes.INTEGER,
-    defaultValue: 0,
     allowNull: false,
+    defaultValue: 0,
   },
 });
 

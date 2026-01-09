@@ -32,7 +32,36 @@ app.use("/uploads", express.static(path.join(__dirname, "public/uploads"))); // 
 app.use("/api", apiRouter); // mount api router
 app.use("/auth", authRouter); // mount auth router
 
-// error handling middleware
+// Serve frontend static files (for production)
+// Check if we're in production and frontend dist exists
+const fs = require("fs");
+const frontendDistPath = path.join(__dirname, "..", "frontend", "dist");
+try {
+  if (fs.existsSync(frontendDistPath)) {
+    app.use(express.static(frontendDistPath));
+    
+    // Catch-all handler: send back React's index.html file for any non-API routes
+    // This must be LAST, after all API routes
+    app.get("*", (req, res, next) => {
+      // Don't serve React app for API/auth/uploads routes (they should have been handled above)
+      if (req.path.startsWith("/api") || req.path.startsWith("/auth") || req.path.startsWith("/uploads")) {
+        return next();
+      }
+      // Send React app for all other routes
+      const indexPath = path.join(frontendDistPath, "index.html");
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.status(404).send("Frontend not found. Please build the frontend first.");
+      }
+    });
+  }
+} catch (err) {
+  console.log("⚠️  Frontend dist folder not found. Skipping frontend serving.");
+  console.log("   (This is normal in development - use the webpack dev server instead)");
+}
+
+// error handling middleware (must be LAST, after all routes)
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.sendStatus(500);
