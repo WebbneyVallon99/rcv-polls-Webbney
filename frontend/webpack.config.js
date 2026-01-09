@@ -47,7 +47,12 @@ module.exports = {
       directory: path.join(__dirname, "dist"),
     },
     compress: true,
-    historyApiFallback: true,
+    historyApiFallback: {
+      index: "/index.html",
+      disableDotRule: true,
+    },
     port: 3000,
+    hot: true,
+    open: false,
   },
 };

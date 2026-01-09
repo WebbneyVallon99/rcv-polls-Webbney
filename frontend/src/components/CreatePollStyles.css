@@ -1,0 +1,277 @@
+.create-poll-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: calc(100vh - 70px);
+  padding: 40px 20px;
+}
+
+.create-poll-form {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(244, 228, 188, 0.85));
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 12px 32px var(--xilonen-shadow), 0 0 0 3px var(--xilonen-gold);
+  width: 100%;
+  max-width: 700px;
+  border: 2px solid var(--xilonen-gold-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.create-poll-form::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, var(--xilonen-gold), var(--xilonen-teal), var(--xilonen-gold));
+}
+
+.create-poll-form h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--xilonen-text);
+  font-size: 2.25rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--xilonen-gold-dark), var(--xilonen-gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 2px 2px 4px rgba(212, 175, 55, 0.3);
+  letter-spacing: 2px;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--xilonen-text);
+  font-size: 0.95rem;
+}
+
+.required {
+  color: var(--xilonen-accent);
+}
+
+.form-group input[type="text"],
+.form-group input[type="datetime-local"],
+.form-group textarea {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--xilonen-gold-light);
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--xilonen-text);
+  font-family: inherit;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--xilonen-gold);
+  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2), 0 4px 12px var(--xilonen-shadow);
+  transform: translateY(-2px);
+}
+
+.form-group input.error,
+.form-group textarea.error {
+  border-color: var(--xilonen-accent);
+  box-shadow: 0 0 0 4px rgba(194, 24, 91, 0.2);
+}
+
+.form-group input[type="file"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px dashed var(--xilonen-gold-light);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.form-group input[type="file"]:hover {
+  border-color: var(--xilonen-gold);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.error-text {
+  color: var(--xilonen-accent);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: block;
+  font-weight: 600;
+}
+
+.error-message {
+  background: linear-gradient(135deg, rgba(194, 24, 91, 0.15), rgba(160, 20, 71, 0.1));
+  color: #8b1040;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  border: 2px solid var(--xilonen-accent);
+  font-weight: 600;
+}
+
+.image-preview {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.preview-img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 10px;
+  border: 2px solid var(--xilonen-gold);
+  box-shadow: 0 4px 12px var(--xilonen-shadow);
+}
+
+.options-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.add-option-btn {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, var(--xilonen-teal), var(--xilonen-teal-dark));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+  box-shadow: 0 2px 8px rgba(64, 224, 208, 0.3);
+}
+
+.add-option-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(64, 224, 208, 0.5);
+}
+
+.option-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  align-items: flex-start;
+}
+
+.option-input-group {
+  flex: 1;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.option-input-group input[type="text"] {
+  flex: 1;
+  margin: 0;
+}
+
+.option-image-input {
+  width: 120px !important;
+  padding: 0.5rem !important;
+  font-size: 0.8rem !important;
+  cursor: pointer;
+}
+
+.option-preview-img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid var(--xilonen-gold-light);
+}
+
+.remove-option-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: linear-gradient(135deg, var(--xilonen-accent), #a01447);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(194, 24, 91, 0.3);
+}
+
+.remove-option-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(194, 24, 91, 0.5);
+  background: linear-gradient(135deg, #a01447, var(--xilonen-accent));
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid rgba(212, 175, 55, 0.3);
+}
+
+.cancel-btn,
+.submit-btn {
+  padding: 0.875rem 2rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 2px solid;
+}
+
+.cancel-btn {
+  background: transparent;
+  color: var(--xilonen-text);
+  border-color: var(--xilonen-gold);
+}
+
+.cancel-btn:hover:not(:disabled) {
+  background: rgba(212, 175, 55, 0.1);
+  transform: translateY(-2px);
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, var(--xilonen-gold), var(--xilonen-gold-dark));
+  color: var(--xilonen-text);
+  border-color: var(--xilonen-gold-dark);
+  box-shadow: 0 4px 12px var(--xilonen-shadow);
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--xilonen-gold-dark), var(--xilonen-gold));
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px var(--xilonen-shadow);
+  border-color: var(--xilonen-teal-dark);
+}
+
+.cancel-btn:disabled,
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
